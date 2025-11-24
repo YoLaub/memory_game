@@ -1,0 +1,68 @@
+@startuml
+' Fichier: conception/class_diagram.puml
+
+title Diagramme de Classes - Jeu de Memory (Architecture M-V)
+
+skinparam classAttributeIconSize 0
+
+class GameLogic {
+  - imageFiles: string[]
+  - cards: Card[]
+  - firstCardClicked: Card
+  - secondCardClicked: Card
+  - lockBoard: boolean
+  - score: int
+  - moves: int
+  --
+  + constructor(imageFiles)
+  + startGame(): void
+  + selectCard(card: Card): void
+  --
+  - createCards(): void
+  - shuffleCards(): void
+  - _checkForMatch(): void
+  - _handleMatch(): void
+  - _handleNoMatch(): void
+  - _resetTurn(): void
+  .. Callbacks ..
+  + onMoveUpdate
+  + onScoreUpdate
+  + onMatch
+  + onNoMatch
+  + onGameOver
+}
+
+class GameView {
+  - boardElement: HTMLElement
+  - scoreElement: HTMLElement
+  - movesElement: HTMLElement
+  - logic: GameLogic
+  - cardElements: Map<string, HTMLElement>
+  --
+  + constructor(..., logic: GameLogic)
+  + renderBoard(): void
+  + updateScore(score: int): void
+  + updateMoves(moves: int): void
+  --
+  - _bindLogicEvents(): void
+}
+
+class Card {
+  - id: string
+  - imagePath: string
+  - isFlipped: boolean
+  - isMatched: boolean
+  - element: HTMLElement
+  --
+  + constructor(id, imagePath)
+  + flip(): void
+  + unflip(): void
+  + match(): void
+  - _createElement(): HTMLElement
+}
+
+' Relations
+GameLogic "1" *-- "0..*" Card : contient >
+GameView "1" --> "1" GameLogic : contrôle >
+
+@enduml

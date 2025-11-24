@@ -1,0 +1,19 @@
+@startuml
+left to right direction
+
+actor Joueur
+
+rectangle "Jeu de Memory" {
+  usecase UC_START as "Démarrer la Partie"
+  usecase UC_CLICK as "Cliquer sur une Carte"
+
+
+  ' Relations entre l'acteur et les cas d'utilisation
+  Joueur -- UC_START
+  Joueur -- UC_CLICK
+
+
+
+}
+
+@enduml
