@@ -1,33 +1,71 @@
-## Le jeu du "Memory"
+# Jeu de Memory en JavaScript
 
-### Objectif
-Le but de ce projet est d'écrire un programme de jeu de **Memory**. Le Memory se joue avec des paires de carte ayant la même image. Au début du jeu, toutes les cartes sont retournées (face non visible), puis on choisit deux cartes, que l'on retourne successivement.  
-Si les deux cartes ont la même image, on a trouvé une paire, et les 2 cartes restent face visible avec leur image.  
-Si les 2 cartes choisies ne correspondent pas à la même image, les cartes restent visibles une fraction de seconde puis sont retournées (face non visible).  
-Dans cette version *solo*, le but du jeu de Memory est de trouver toutes les paires d'images en un minimum de coups et/ou en un temps record.
+Ce projet est une implémentation en JavaScript pur (Vanilla JS) du jeu de Memory classique. L'accent a été mis sur une architecture logicielle propre et découplée, séparant la logique du jeu de sa représentation visuelle.
 
-### Données fournies
-Les données retenues pour construire les faces et le dos des cartes peuvent être librement choisies :
-  1. Soit les images données dans le répertoire "resources/images" de ce repository, 
-  2. Soit les 'sprites' des Pokemons obtenus à partir de l'API https://pokeapi.co/api/v2/pokemon/,
-  3. Soit des symboles obtenus à travers une police d'icônes comme "fontawesome" ou "glyphicon",
-  4. ...
+## Architecture & Conception
 
-### Travail à réaliser
-Développer le jeu qui devra s'exécuter dans un navigateur à l'aide du HTML, CSS et, bien entendu, du JavaScript.  
-L'écriture du code doit valoriser une approche OO.
+Le projet est structuré autour d'un patron de conception qui sépare clairement les responsabilités (Separation of Concerns), s'inspirant du patron Modèle-Vue.
 
-#### 1. La conception
-Proposez des diagrammes UML : diagramme(s) des cas d'utilisation, diagramme(s) de séquence (de conception) et finallement le diagramme de classes.
+### 1. La Logique (Le "Modèle") - `GameLogic.js`
 
-#### 2. L'implémentation
-L'implémentation devra être conforme à votre conception !  
+Le fichier `GameLogic.js` est le cerveau de l'application. Il contient toute la logique du jeu et gère l'état de la partie (les cartes, le score, les tours, les cartes sélectionnées).
 
-La restitution visuelle et graphique peut se faire selon votre choix :
-  - en HTML / CSS pur,
-  - en s'appuyant sur l'objet HTML \<canvas\>
-  - en utilisant une librairie graphique comme P5.js
-  - ...
+*   **Indépendance du DOM** : Ce module n'a aucune connaissance du HTML ou du CSS. Il ne manipule jamais le DOM directement.
+*   **Communication par Callbacks** : Pour notifier l'interface utilisateur des changements d'état, `GameLogic.js` utilise un système de callbacks (ex: `onScoreUpdate`, `onMatch`, `onGameOver`). La Vue "s'abonne" à ces événements pour mettre à jour l'affichage.
+*   **Gestion de l'état** : Il est le seul responsable de la modification de l'état des objets `Card` (retournée, trouvée, etc.).
 
+### 2. La Vue (La "View") - `GameView.js`
 
-# memory_game
+Le fichier `GameView.js` est responsable de tout ce qui concerne l'affichage et l'interaction avec l'utilisateur.
+
+*   **Manipulation du DOM** : Sa seule responsabilité est de traduire l'état fourni par `GameLogic` en éléments HTML visibles et interactifs. Il crée les cartes, met à jour le score et gère les classes CSS pour les animations (ex: `.flipped`, `.matched`).
+*   **Liaison des Événements** : Dans sa méthode `_bindLogicEvents()`, la vue connecte les callbacks de la logique à ses propres méthodes de mise à jour du DOM.
+*   **Capture des entrées utilisateur** : Il écoute les clics sur les cartes (`addEventListener`) et délègue le traitement de ces actions à la logique via la méthode `this.logic.selectCard(card)`.
+
+### 3. Le Modèle de Donnée - `Card.js`
+
+La classe `Card.js` est un modèle de données simple qui représente une seule carte. Elle contient ses propriétés (`id`, `imagePath`) et son état interne (`isFlipped`, `isMatched`). Elle est également responsable de la création de son propre élément HTML de base (`_createElement()`), rendant chaque objet carte autonome.
+
+### 4. Le Point d'Entrée - `index.js`
+
+Ce fichier est l'orchestrateur. Il a un rôle simple mais crucial :
+1.  Récupérer les éléments du DOM.
+2.  Instancier `GameLogic`.
+3.  Instancier `GameView` en lui injectant la logique (`gameLogic`).
+4.  Démarrer la partie.
+
+Cette architecture garantit que la logique du jeu pourrait être réutilisée avec une interface complètement différente (par exemple, en `<canvas>`, en console, ou avec un framework comme React/Vue) sans avoir à modifier une seule ligne de `GameLogic.js`.
+
+## Structure des Fichiers
+
+```
+.                                                                                                                                                                                   
+├── UML/                                                                                                                                                                            
+│   ├── Diagramme_class.puml     # Diagramme de classes de l'architecture                                                                                                           
+│   └── Diagramme_Sequence.puml  # Séquence d'un tour de jeu                                                                                                                        
+│   └── USeCase.puml             # Cas d'utilisation                                                                                                                                
+├── Card.js                      # Classe représentant une carte                                                                                                                    
+├── GameLogic.js                 # Cœur du jeu : règles, état, score                                                                                                                
+├── GameView.js                  # Gestion de l'affichage et des interactions DOM                                                                                                   
+├── index.html                   # Structure HTML de la page                                                                                                                        
+├── index.js                     # Point d'entrée : initialisation et orchestration                                                                                                 
+├── style.css                    # Styles et animations des cartes                                                                                                                  
+└── Readme.md                    # Ce fichier                                                                                                                                       
+```                                                                                                                                                                                 
+                                                                                                                                                                                    
+## Technologies Utilisées                                                                                                                                                           
+                                                                                                                                                                                    
+*   **HTML5**                                                                                                                                                                       
+*   **CSS3** (Flexbox, Grid, animations `transform`)                                                                                                                                
+*   **JavaScript (ES6)** : Utilisation des modules (`import`/`export`) et des classes.                                                                                              
+*   **PlantUML** : Pour la modélisation des diagrammes de conception situés dans le dossier `UML/`.                                                                                 
+                                                                                                                                                                                    
+## Comment Lancer le Projet                                                                                                                                                         
+                                                                                                                                                                                    
+Aucune dépendance ou étape de compilation n'est nécessaire.                                                                                                                         
+                                                                                                                                                                                    
+1.  Clonez ou téléchargez ce dépôt.                                                                                                                                                 
+2.  Ouvrez le fichier `index.html` directement dans un navigateur web moderne.                                                                                                      
+                                                                                                                                                                                    
+Pour une expérience optimale et pour éviter tout problème potentiel de CORS lié au chargement des modules JavaScript (`type="module"`), il est recommandé de servir les fichiers via un serveur local simple.                                                                                                                                                           
+                                                                                                                                                                          
